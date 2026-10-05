@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AppMentor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&display=swap" rel="stylesheet" />
+<style>
+:root{--paper:#f1f5f2;--ink:#0f1a16;--mute:#5d6b64;--line:#cfd9d3;--blue:#2f4bff;--amber:#f5a524;--ok:#1f9d6b;--err:#d6336c;--white:#fff;
+--disp:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;--body:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+button,input,textarea{font:inherit;color:inherit}
+body{font-family:var(--body);background:var(--paper);color:var(--ink);line-height:1.55}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.hidden{display:none!important}
+.mu{color:var(--mute)}.sm{font-size:13px}
+.shell{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+.rail{position:sticky;top:0;height:100vh;padding:28px 24px;background:var(--ink);color:#e7efe9;display:flex;flex-direction:column;gap:36px}
+.logo{font:800 24px var(--disp);letter-spacing:-.02em}
+.logo b{color:var(--amber)}
+.steps{list-style:none;display:flex;flex-direction:column;gap:0;flex:1}
+.step{display:flex;align-items:center;gap:14px;padding:12px 0;color:#7f9187;position:relative;font-weight:500}
+.step i{width:14px;height:14px;border-radius:50%;border:2px solid #4b5c53;background:var(--ink);z-index:1;flex:none}
+.step:not(:last-child)::after{content:"";position:absolute;left:6px;top:32px;bottom:-12px;width:2px;background:#33423a}
+.step.run{color:#fff}.step.run i{border-color:var(--amber);background:var(--amber);animation:pulse 1.2s infinite}
+.step.done{color:#bfe9d5}.step.done i{border-color:var(--ok);background:var(--ok)}
+@keyframes pulse{50%{box-shadow:0 0 0 7px rgba(245,165,36,.2)}}
+.ghost{background:none;border:1.5px solid var(--line);padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+.rail .ghost{border-color:#4b5c53;color:#e7efe9}
+.btn{background:var(--blue);color:#fff;border:0;padding:13px 24px;border-radius:12px;font-weight:700;cursor:pointer;box-shadow:0 4px 0 #1a2fb3;transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #1a2fb3}
+.btn.warn{background:var(--err);box-shadow:0 3px 0 #9d1f4d;padding:8px 14px}
+.ghost.sm,.btn.sm{padding:6px 12px;font-size:13px}
+main{padding:48px clamp(20px,5vw,64px);max-width:1180px;width:100%}
+h1{font:800 clamp(34px,5vw,58px)/1.05 var(--disp);letter-spacing:-.03em;max-width:15ch}
+h2{font:700 28px var(--disp);letter-spacing:-.02em;margin-bottom:6px}
+h3{font:700 17px var(--disp);margin-bottom:8px}
+.stage{margin-bottom:44px}
+.lede{margin:14px 0 28px;max-width:52ch;color:var(--mute);font-size:17px}
+textarea{width:100%;min-height:130px;resize:vertical;padding:18px 20px;border:2px solid var(--ink);border-radius:16px;background:var(--white);font-size:18px}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:16px}
+.seg{display:inline-flex;border:2px solid var(--ink);border-radius:12px;overflow:hidden}
+.seg button{border:0;background:var(--white);padding:9px 14px;cursor:pointer;font-weight:600}
+.seg button.on{background:var(--ink);color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{background:none;border:1.5px dashed var(--mute);border-radius:999px;padding:6px 14px;cursor:pointer;color:var(--mute)}
+.chip:hover{border-style:solid;color:var(--ink);border-color:var(--ink)}
+.sec{border-top:2px solid var(--ink);padding-top:18px}
+.kv{display:flex;gap:12px;margin:6px 0}.kv span{width:48px;color:var(--mute)}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.pill{background:var(--white);border:1.5px solid var(--line);border-radius:8px;padding:4px 11px;font-size:14px}
+.q{display:flex;flex-direction:column;gap:5px;margin:14px 0}
+input[type=text]{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--white)}
+.pg{display:grid;grid-template-columns:repeat(2,1fr);gap:28px;margin:16px 0}
+.pg .full{grid-column:1/-1}
+.list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.item{display:flex;gap:6px}.item input{flex:1;min-width:0}
+.res{display:grid;grid-template-columns:minmax(0,415px) 1fr;gap:32px;align-items:start}
+.tool{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.tool select{padding:6px 8px;border:1.5px solid var(--line);border-radius:10px;background:var(--white)}
+.phone{width:100%;max-width:415px;padding:11px;border-radius:46px;background:#06100c;box-shadow:0 30px 60px -25px rgba(15,26,22,.55)}
+.screen{height:min(812px,74vh);border-radius:36px;overflow:hidden;background:#fff}
+#previewFrame{width:100%;height:100%;border:0}
+.err{margin-top:12px;padding:10px 12px;border-radius:12px;background:#fde7ef;border:1.5px solid var(--err);display:flex;justify-content:space-between;gap:10px;align-items:center}
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--ink);margin-bottom:18px;flex-wrap:wrap}
+.tab{border:0;background:none;padding:10px 16px;font-weight:700;cursor:pointer;color:var(--mute);border-radius:10px 10px 0 0}
+.tab.on{background:var(--ink);color:#fff}
+.lead{font-size:17px;margin-bottom:18px;max-width:62ch}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:18px}
+.mini{background:var(--white);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px}
+.quiz{padding:14px 0;border-top:1.5px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.opt{text-align:left;background:var(--white);border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;cursor:pointer}
+.opt:not(:disabled):hover{border-color:var(--ink)}
+.opt.ok{background:#dcf5ea;border-color:var(--ok)}.opt.bad{background:#fde7ef;border-color:var(--err)}
+.score{font-weight:700;margin-top:10px}
+.code{background:var(--ink);color:#dfeae3;padding:16px;border-radius:14px;overflow:auto;max-height:560px;white-space:pre-wrap;word-break:break-word;font:13px/1.55 ui-monospace,Menlo,monospace;margin-top:10px}
+.files{display:flex;gap:6px;flex-wrap:wrap}
+.files .ghost.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.status{position:fixed;left:274px;bottom:20px;display:flex;align-items:center;gap:10px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;z-index:5}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid #ffffff55;border-top-color:var(--amber);animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(1turn)}}
+.toast{position:fixed;bottom:20px;right:20px;max-width:min(420px,90vw);background:var(--err);color:#fff;padding:12px 16px;border-radius:12px;z-index:6;font-weight:600}
+@media(max-width:980px){.res{grid-template-columns:1fr}.phone{margin:auto}}
+@media(max-width:760px){
+.shell{grid-template-columns:1fr}.rail{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:12px;padding:14px 18px}
+.steps{flex-direction:row;gap:14px;flex-basis:100%;order:3;overflow:auto}.step{padding:4px 0;font-size:13px}.step::after{display:none}
+.status{left:16px}.pg{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="logo">App<b>Mentor</b></div>
+    <ol id="progressWrap" class="steps" aria-label="Progress">
+      <li class="step" data-step="understand"><i></i>Understand</li>
+      <li class="step" data-step="plan"><i></i>Plan</li>
+      <li class="step" data-step="build"><i></i>Build</li>
+      <li class="step" data-step="explain"><i></i>Explain</li>
+      <li class="step" data-step="learn"><i></i>Learn</li>
+    </ol>
+    <button id="resetBtn" class="ghost sm hidden" type="button">Start over</button>
+  </aside>
+
+  <main>
+    <section id="ideaScreen" class="stage">
+      <h1>What do you want to build?</h1>
+      <p class="lede">Describe your app in a sentence. You'll get a plan to edit, a working mobile prototype, and a short course on how it was made.</p>
+      <textarea id="ideaInput" maxlength="4000" aria-label="App idea" placeholder="A habit tracker that rewards daily streaks..."></textarea>
+      <div class="bar">
+        <div class="seg" id="levelSeg" role="group" aria-label="Experience level">
+          <button type="button" data-v="beginner" class="on">Beginner</button>
+          <button type="button" data-v="intermediate">Intermediate</button>
+          <button type="button" data-v="advanced">Advanced</button>
+        </div>
+        <button id="startBtn" class="btn" type="button">Start building</button>
+        <button id="sampleBtn" class="ghost" type="button">Try a sample</button>
+      </div>
+      <div class="chips">
+        <button class="chip" type="button" data-idea="Habit tracker app to build daily streaks">Habit tracker</button>
+        <button class="chip" type="button" data-idea="Expense splitter to track shared bills">Expense splitter</button>
+        <button class="chip" type="button" data-idea="Flashcard quiz app to memorize terms">Flashcard quiz</button>
+      </div>
+    </section>
+
+    <section id="understandCard" class="stage sec hidden">
+      <h2>Here's what we understood</h2>
+      <div id="summary"></div>
+      <div id="clarifyWrap" class="hidden">
+        <h3>A few quick questions</h3>
+        <div id="clarifyQuestions"></div>
+        <button id="continueClarify" class="btn" type="button">Continue</button>
+      </div>
+    </section>
+
+    <section id="planCard" class="stage sec hidden">
+      <h2>Your plan</h2>
+      <p class="mu">Edit anything before we build.</p>
+      <div class="pg">
+        <div><h3>Screens</h3><div id="screensList" class="list"></div><button id="addScreen" class="ghost sm" type="button">Add screen</button></div>
+        <div><h3>Features</h3><div id="featuresList" class="list"></div><button id="addFeature" class="ghost sm" type="button">Add feature</button></div>
+        <div><h3>Tech stack</h3><input id="techStackInput" type="text" /></div>
+        <div><h3>Data model</h3><input id="dataModelInput" type="text" /></div>
+        <div class="full"><h3>Build steps</h3><div id="stepsList" class="list"></div><button id="addStep" class="ghost sm" type="button">Add step</button></div>
+      </div>
+      <button id="approveBtn" class="btn" type="button">Approve and build</button>
+    </section>
+
+    <section id="resultWrap" class="stage hidden">
+      <div class="res">
+        <div>
+          <div class="tool">
+            <button id="reloadBtn" class="ghost sm" type="button">Reload</button>
+            <select id="versionSelect" aria-label="Version"></select>
+            <button id="downloadBtn" class="ghost sm" type="button">Download ZIP</button>
+          </div>
+          <div class="phone"><div class="screen"><iframe id="previewFrame" title="App preview" sandbox="allow-scripts"></iframe></div></div>
+          <div id="errorBanner" class="err hidden"><span id="errorText" class="sm"></span><button id="fixBtn" class="btn warn" type="button">Auto-fix</button></div>
+        </div>
+        <div>
+          <div class="tabs" role="tablist">
+            <button class="tab on" type="button" data-tab="explain">How it works</button>
+            <button class="tab" type="button" data-tab="quiz">Quiz</button>
+            <button class="tab" type="button" data-tab="practice">Practice</button>
+            <button class="tab" type="button" data-tab="code">Source</button>
+          </div>
+          <div id="pane-explain"></div>
+          <div id="pane-quiz" class="hidden"></div>
+          <div id="pane-practice" class="hidden"></div>
+          <div id="pane-code" class="hidden">
+            <div class="files">
+              <button class="ghost sm on" type="button" data-file="index.html">index.html</button>
+              <button class="ghost sm" type="button" data-file="style.css">style.css</button>
+              <button class="ghost sm" type="button" data-file="app.js">app.js</button>
+            </div>
+            <pre id="codeBlock" class="code"></pre>
+            <p id="fileExplain" class="mu sm" style="margin-top:8px"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div id="status" class="status hidden" role="status" aria-live="polite"><span class="spin"></span><span id="statusText">Working...</span></div>
+<div id="toast" class="toast hidden" role="alert"></div>
+
+<script>
+'use strict';
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+// Same-origin when served by FastAPI; otherwise talk to the API on :8000.
+const API=(()=>{const l=['localhost','127.0.0.1',''].includes(location.hostname);return l&&location.port!=='8000'?'http://127.0.0.1:8000':'';})();
+const fresh=()=>({sid:null,questions:[],answers:[],understanding:null,plan:null,files:null,byVer:{},version:null,versions:[],explanation:null,learning:null,file:'index.html',busy:false});
+const S=Object.assign(fresh(),{idea:'',exp:'beginner'});
+
+/* ---- persistence: session (this page) + preview localStorage (generated app) ---- */
+const SAVE='appmentor:session';
+const storeKey=sid=>`appmentor:store:${sid||S.sid}`;
+function save(){
+  if(!S.sid)return;
+  try{localStorage.setItem(SAVE,JSON.stringify({sid:S.sid,idea:S.idea,exp:S.exp,understanding:S.understanding,plan:S.plan,
+    version:S.version,versions:S.versions,explanation:S.explanation,learning:S.learning}));}catch(_){}
+}
+function forget(){try{localStorage.removeItem(storeKey());localStorage.removeItem(SAVE);}catch(_){}}
+
+function h(tag,o={},kids=[]){const e=document.createElement(tag);if(o.class)e.className=o.class;if(o.text!=null)e.textContent=o.text;
+  for(const[k,v]of Object.entries(o.attrs||{}))e.setAttribute(k,v);kids.forEach(c=>e.appendChild(c));return e;}
+const tx=v=>v==null?'':typeof v==='string'?v:JSON.stringify(v);
+const show=e=>e&&e.classList.remove('hidden'),hide=e=>e&&e.classList.add('hidden');
+let tt;function toast(m,ms=4500){const t=$('#toast');t.textContent=m;show(t);clearTimeout(tt);if(ms)tt=setTimeout(()=>hide(t),ms);}
+function status(on,label){$('#status').classList.toggle('hidden',!on);if(label)$('#statusText').textContent=label;}
+function busy(){if(S.busy){toast('Still working, one moment...',2000);return true;}return false;}
+function step(n,st){const e=$(`.step[data-step="${n}"]`);if(!e)return;e.classList.remove('run','done');if(st)e.classList.add(st);}
+const resetSteps=()=>$$('.step').forEach(s=>s.classList.remove('run','done'));
+const clearRun=()=>$$('.step.run').forEach(s=>s.classList.remove('run'));
+function fail(d){clearRun();const m=(d&&d.message)||'Something went wrong. Please try again.';console.error('AppMentor error:',m);toast(m+'  (click to dismiss)',0);}
+
+/* ---- streaming ---- */
+function dispatch(part,hd){
+  if(!part.startsWith('data:'))return;let ev;try{ev=JSON.parse(part.slice(5));}catch(_){return;}
+  const d=ev.data||{};if(d.session_id)S.sid=d.session_id;
+  const f=hd[ev.event];if(f){try{f(d);}catch(e){console.error(ev.event,e);}}
+}
+async function run(path,body,hd,label){
+  S.busy=true;status(true,label);
+  try{
+    const r=await fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok){let m=`Request failed (${r.status}) for POST ${r.url||path}`;
+      try{const j=await r.json();if(j.detail)m=(typeof j.detail==='string'?j.detail:JSON.stringify(j.detail))+` (${r.status})`;}catch(_){}
+      throw new Error(m);}
+    const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
+    for(;;){const{done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});
+      const parts=buf.split('\n\n');buf=parts.pop()||'';parts.forEach(p=>dispatch(p,hd));}
+    if(buf.trim())dispatch(buf,hd);
+  }catch(e){(hd.error||fail)({message:e.message||'Network error'});}
+  finally{S.busy=false;status(false);}
+}
+
+/* ---- understand + clarify ---- */
+function renderSummary(u){
+  const b=$('#summary');b.replaceChildren();if(!u)return;
+  b.append(h('div',{class:'kv'},[h('span',{class:'mu',text:'App'}),h('b',{text:u.app_type||'-'})]),
+    h('div',{class:'kv'},[h('span',{class:'mu',text:'For'}),h('b',{text:u.target_users||'-'})]),
+    h('div',{class:'pills'},((u.core_features||{}).features||[]).map(f=>h('span',{class:'pill',text:f}))));
+}
+function renderClarify(vis){
+  const w=$('#clarifyWrap'),q=$('#clarifyQuestions');q.replaceChildren();
+  if(vis&&S.questions.length){show(w);S.questions.forEach((t,i)=>q.appendChild(h('label',{class:'q'},[h('span',{text:t}),h('input',{attrs:{type:'text','data-i':String(i)}})])));}
+  else hide(w);
+}
+
+/* ---- plan editing ---- */
+function editable(sel,get,onEdit,onRemove){
+  const c=$(sel);c.replaceChildren();
+  get().forEach((v,i)=>{
+    const inp=h('input',{attrs:{type:'text'}});inp.value=v;inp.addEventListener('input',()=>onEdit(i,inp.value));
+    const rm=h('button',{class:'ghost sm',text:'\u2212',attrs:{type:'button','aria-label':'Remove'}});
+    rm.addEventListener('click',()=>{onRemove(i);editable(sel,get,onEdit,onRemove);});
+    c.appendChild(h('div',{class:'item'},[inp,rm]));
+  });
+}
+function plan(){const p=S.plan||(S.plan={});['screens','features','build_steps'].forEach(k=>{if(!Array.isArray(p[k]))p[k]=[];});return p;}
+function renderPlan(){
+  const p=plan(),nm=s=>typeof s==='string'?s:tx(s&&s.name);
+  editable('#screensList',()=>p.screens.map(nm),(i,v)=>{if(typeof p.screens[i]==='string')p.screens[i]=v;else p.screens[i].name=v;},i=>p.screens.splice(i,1));
+  editable('#featuresList',()=>p.features.map(tx),(i,v)=>{p.features[i]=v;},i=>p.features.splice(i,1));
+  editable('#stepsList',()=>p.build_steps.map(tx),(i,v)=>{p.build_steps[i]=v;},i=>p.build_steps.splice(i,1));
+  $('#techStackInput').value=tx(p.tech_stack);$('#dataModelInput').value=tx(p.data_model);
+}
+function addItem(k,sel){const p=plan();if(k==='screens')p.screens.push({name:'',purpose:''});else p[k].push('');renderPlan();const i=$$(sel+' input');if(i.length)i[i.length-1].focus();}
+
+/* ---- preview + code ---- */
+const hideErr=()=>hide($('#errorBanner'));
+function preview(){
+  if(!S.sid)return;hideErr();
+  // Hand the generated app its saved localStorage data (the server-side shim reads #store=...).
+  let hash='';
+  try{const raw=localStorage.getItem(storeKey());if(raw&&raw.length<500000)hash='#store='+encodeURIComponent(raw);}catch(_){}
+  $('#previewFrame').src=`${API}/preview/${encodeURIComponent(S.sid)}/${encodeURIComponent(S.version||'latest')}/index.html?ts=${Date.now()}${hash}`;
+}
+function fillVersions(){
+  const s=$('#versionSelect');s.replaceChildren();
+  S.versions.forEach(v=>s.appendChild(h('option',{text:v,attrs:{value:v}})));if(S.version)s.value=S.version;
+}
+function renderCode(){
+  if(!S.files)return;
+  $('#codeBlock').textContent=S.files[S.file]||'';
+  $$('.files button').forEach(b=>b.classList.toggle('on',b.dataset.file===S.file));
+  $('#fileExplain').textContent=((S.explanation||{}).per_file_explanations||{})[S.file]||'';
+}
+function buildDone(d){
+  if(d.version){S.version=d.version;if(!S.versions.includes(d.version))S.versions.push(d.version);if(d.files)S.byVer[d.version]=d.files;}
+  if(d.files)S.files=d.files;
+  fillVersions();preview();renderCode();step('build','done');status(true,'Preparing your lessons...');save();
+}
+
+/* ---- lessons ---- */
+const optText=o=>typeof o==='string'?o:tx(o&&(o.text||o.label));
+function correctIdx(q){
+  const o=q.options||[],c=q.correct_answer;let i=o.findIndex(x=>optText(x)===c);if(i>=0)return i;
+  if(typeof c==='number'&&o[c]!==undefined)return c;
+  if(typeof c==='string'&&/^[A-Da-d]$/.test(c.trim()))return c.trim().toUpperCase().charCodeAt(0)-65;
+  return o.findIndex(x=>x&&typeof x==='object'&&(x.is_correct||x.correct));
+}
+const note=m=>h('p',{class:'mu',text:m});
+function renderLessons(){
+  const ex=S.explanation||{},lr=S.learning||ex;
+  const pe=$('#pane-explain'),pq=$('#pane-quiz'),pp=$('#pane-practice');[pe,pq,pp].forEach(p=>p.replaceChildren());
+  const cons=lr.key_concepts||[],quiz=lr.quiz||[],exs=lr.exercises||[],nxt=lr.next_steps||[];
+  if(ex.architecture_overview)pe.appendChild(h('p',{class:'lead',text:ex.architecture_overview}));
+  if(cons.length)pe.appendChild(h('div',{class:'cards'},cons.map(c=>h('div',{class:'mini'},[h('b',{text:tx(c.term)}),h('p',{class:'mu sm',text:tx(c.definition)})]))));
+  if(!pe.childNodes.length)pe.appendChild(note('Your walkthrough appears here once the build is ready.'));
+
+  let score=0;const sc=h('p',{class:'score',text:quiz.length?`Score: 0/${quiz.length}`:''});
+  quiz.forEach((q,qi)=>{
+    const box=h('div',{class:'quiz'},[h('b',{text:`${qi+1}. ${tx(q.question)}`})]),ci=correctIdx(q),opts=[];
+    (q.options||[]).forEach((o,oi)=>{
+      const b=h('button',{class:'opt',text:optText(o),attrs:{type:'button'}});opts.push(b);
+      b.addEventListener('click',()=>{
+        if(oi===ci)score++;
+        opts.forEach((x,xi)=>{x.disabled=true;if(xi===ci)x.classList.add('ok');else if(x===b)x.classList.add('bad');});
+        if(q.explanation)box.appendChild(h('p',{class:'mu sm',text:tx(q.explanation)}));
+        sc.textContent=`Score: ${score}/${quiz.length}`;
+      });box.appendChild(b);
+    });pq.appendChild(box);
+  });
+  if(quiz.length)pq.appendChild(sc);else pq.appendChild(note('A short quiz appears here after the build.'));
+
+  exs.forEach(e=>pp.appendChild(h('div',{class:'mini',attrs:{style:'margin-bottom:10px'}},[h('b',{text:tx(e.title)}),h('p',{class:'mu sm',text:tx(e.description)})])));
+  if(nxt.length){pp.appendChild(h('h3',{text:'Where to go next',attrs:{style:'margin-top:16px'}}));pp.appendChild(h('ul',{attrs:{style:'padding-left:20px'}},nxt.map(n=>h('li',{text:tx(n)}))));}
+  if(!pp.childNodes.length)pp.appendChild(note('Practice exercises appear here after the build.'));
+  renderCode();
+}
+function lessonsDone(d){
+  S.explanation=d.explanation||{};renderLessons();step('explain','done');step('learn','run');save();
+  if(d.explanation_error)toast('Your app is ready, but the lessons could not be generated this time.',6000);
+}
+function learnDone(d){
+  const n=d.learning||S.explanation;
+  if(JSON.stringify(n)!==JSON.stringify(S.learning||S.explanation)){S.learning=n;renderLessons();}
+  step('learn','done');save();
+}
+function setTab(t){
+  $$('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+  ['explain','quiz','practice','code'].forEach(k=>$('#pane-'+k).classList.toggle('hidden',k!==t));
+}
+
+/* ---- actions ---- */
+function toIdea(){[$('#understandCard'),$('#planCard'),$('#resultWrap'),$('#resetBtn')].forEach(hide);show($('#ideaScreen'));resetSteps();}
+function start(){
+  if(busy())return;const idea=$('#ideaInput').value.trim();if(!idea){toast('Describe your app first.',2500);return;}
+  Object.assign(S,fresh(),{idea,exp:$('#levelSeg .on').dataset.v});
+  resetSteps();hide($('#ideaScreen'));show($('#understandCard'));show($('#resetBtn'));renderClarify(false);renderSummary(null);step('understand','run');
+  run('/api/start',{user_idea:S.idea,experience_level:S.exp},{
+    understand_done:d=>{S.understanding=d.understanding;S.questions=d.questions||[];S.plan=d.plan||null;renderSummary(d.understanding);step('understand','done');
+      if(S.questions.length)renderClarify(true);else step('plan','run');},
+    needs_clarification:d=>{S.questions=d.questions||[];renderClarify(true);},
+    plan_done:d=>{S.plan=d.plan;renderClarify(false);show($('#planCard'));renderPlan();step('plan','done');},
+    error:d=>{fail(d);toIdea();}
+  },'Understanding your idea...');
+}
+function clarify(){
+  if(busy())return;const answers=$$('#clarifyQuestions input').map(i=>i.value.trim()||'No preference');S.answers=answers;step('plan','run');
+  run('/api/clarify',{session_id:S.sid,user_idea:S.idea,experience_level:S.exp,questions:S.questions,answers},{
+    understand_done:d=>{S.understanding=d.understanding;S.plan=d.plan||null;renderSummary(d.understanding);},
+    plan_done:d=>{S.plan=d.plan;renderClarify(false);show($('#planCard'));renderPlan();step('plan','done');},
+    error:fail
+  },'Shaping your plan...');
+}
+function approve(){
+  if(busy())return;const p=plan();
+  if($('#techStackInput').value!==tx(p.tech_stack))p.tech_stack=$('#techStackInput').value;
+  if($('#dataModelInput').value!==tx(p.data_model))p.data_model=$('#dataModelInput').value;
+  p.screens=p.screens.filter(s=>tx(typeof s==='string'?s:s&&s.name).trim());
+  p.features=p.features.filter(f=>tx(f).trim());p.build_steps=p.build_steps.filter(s=>tx(s).trim());
+  if(!p.screens.length&&!p.features.length){toast('Add at least one screen or feature.',3000);renderPlan();return;}
+  S.explanation=null;S.learning=null;renderLessons();setTab('explain');save();
+  step('build','run');step('explain');step('learn');hide($('#planCard'));show($('#resultWrap'));
+  run('/api/approve',{session_id:S.sid,user_idea:S.idea,experience_level:S.exp,questions:S.questions,answers:S.answers,plan:p,understanding:S.understanding||{}},{
+    build_done:d=>{buildDone(d);step('explain','run');},
+    explain_done:lessonsDone,learn_done:learnDone,
+    error:d=>{fail(d);if(!S.files){hide($('#resultWrap'));show($('#planCard'));}}
+  },'Building your app...');
+}
+function autoFix(){
+  if(busy())return;if(!S.sid){toast('Nothing to fix yet.',2500);return;}
+  step('build','run');
+  run('/api/fix',{session_id:S.sid,user_idea:S.idea,experience_level:S.exp,plan:S.plan||{},understanding:S.understanding||{},error:$('#errorText').textContent},{
+    build_done:d=>{buildDone(d);hideErr();},
+    error:d=>{fail(d);step('build','done');}
+  },'Fixing the preview...');
+}
+function sample(){
+  if(busy())return;Object.assign(S,fresh(),{idea:'Habit tracker',exp:$('#levelSeg .on').dataset.v});
+  resetSteps();hide($('#ideaScreen'));show($('#understandCard'));show($('#resultWrap'));show($('#resetBtn'));renderClarify(false);renderLessons();setTab('explain');step('understand','run');
+  run('/api/sample',{},{
+    understand_done:d=>{S.understanding=d.understanding;renderSummary(d.understanding);step('understand','done');},
+    plan_done:d=>{S.plan=d.plan;show($('#planCard'));renderPlan();step('plan','done');},
+    build_done:buildDone,explain_done:lessonsDone,learn_done:learnDone,
+    error:d=>{fail(d);toIdea();}
+  },'Loading the sample...');
+}
+async function download(){
+  if(!S.sid){toast('Build something first.',2500);return;}const v=S.version||'latest';
+  try{
+    const r=await fetch(`${API}/api/download/${encodeURIComponent(S.sid)}?version=${encodeURIComponent(v)}`);
+    if(!r.ok)throw new Error(`Download failed (${r.status})`);
+    const a=document.createElement('a');a.href=URL.createObjectURL(await r.blob());a.download=`appmentor-${S.sid}-${String(v).replace(/[^\w.-]/g,'')}.zip`;
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  }catch(e){toast(e.message||'Download failed');}
+}
+
+/* ---- restore the last session after a refresh ---- */
+async function restore(){
+  let s=null;try{s=JSON.parse(localStorage.getItem(SAVE)||'null');}catch(_){}
+  if(!s||!s.sid)return;
+  try{
+    const r=await fetch(`${API}/api/files/${encodeURIComponent(s.sid)}/${encodeURIComponent(s.version||'latest')}`);
+    if(!r.ok){try{localStorage.removeItem(SAVE);}catch(_){}return;}   // expired or cleaned up on the server
+    const j=await r.json();
+    Object.assign(S,fresh(),s);S.files=j.files;S.version=j.version;S.byVer={[j.version]:j.files};S.busy=false;
+    S.versions=Array.from(new Set([...(s.versions||[]),j.version]));
+    const lv=$$('#levelSeg button');lv.forEach(b=>b.classList.toggle('on',b.dataset.v===S.exp));
+    hide($('#ideaScreen'));show($('#resultWrap'));show($('#resetBtn'));
+    renderSummary(S.understanding);show($('#understandCard'));
+    fillVersions();preview();renderLessons();setTab('explain');
+    ['understand','plan','build','explain','learn'].forEach(n=>step(n,'done'));
+    if(!S.explanation)toast('Restored your app. The lessons were interrupted, so rebuild to regenerate them.',6000);
+  }catch(_){}
+}
+
+/* ---- init ---- */
+$('#toast').addEventListener('click',()=>hide($('#toast')));
+$('#startBtn').addEventListener('click',start);
+$('#sampleBtn').addEventListener('click',sample);
+$('#resetBtn').addEventListener('click',()=>{forget();location.reload();});
+$('#continueClarify').addEventListener('click',clarify);
+$('#approveBtn').addEventListener('click',approve);
+$('#addScreen').addEventListener('click',()=>addItem('screens','#screensList'));
+$('#addFeature').addEventListener('click',()=>addItem('features','#featuresList'));
+$('#addStep').addEventListener('click',()=>addItem('build_steps','#stepsList'));
+$('#reloadBtn').addEventListener('click',preview);
+$('#downloadBtn').addEventListener('click',download);
+$('#fixBtn').addEventListener('click',autoFix);
+$('#versionSelect').addEventListener('change',async e=>{
+  S.version=e.target.value;
+  if(!S.byVer[S.version]){   // e.g. after a restore, only the latest version is in memory
+    try{const r=await fetch(`${API}/api/files/${encodeURIComponent(S.sid)}/${encodeURIComponent(S.version)}`);
+      if(r.ok)S.byVer[S.version]=(await r.json()).files;}catch(_){}
+  }
+  if(S.byVer[S.version])S.files=S.byVer[S.version];
+  preview();renderCode();save();
+});
+$$('#levelSeg button').forEach(b=>b.addEventListener('click',()=>{$$('#levelSeg button').forEach(x=>x.classList.toggle('on',x===b));}));
+$$('.chip').forEach(c=>c.addEventListener('click',()=>{$('#ideaInput').value=c.dataset.idea;}));
+$$('.tab').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
+$$('.files button').forEach(b=>b.addEventListener('click',()=>{S.file=b.dataset.file;renderCode();}));
+window.addEventListener('message',ev=>{
+  const f=$('#previewFrame');if(!f||ev.source!==f.contentWindow)return;
+  const m=ev.data;if(!m||typeof m!=='object')return;
+  if(m.type==='storage-sync'){   // the generated app wrote to its (shimmed) localStorage
+    try{if(S.sid)localStorage.setItem(storeKey(),JSON.stringify(m.data||{}));}catch(_){}
+    return;
+  }
+  if(m.type==='preview-error'){$('#errorText').textContent=String(m.message||'The preview hit an error.').slice(0,300);show($('#errorBanner'));}
+});
+renderLessons();
+restore();
+</script>
+</body>
+</html>
