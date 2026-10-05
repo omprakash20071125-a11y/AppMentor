@@ -9,7 +9,7 @@ from typing import Any, AsyncGenerator, Dict, List, Optional
 
 try:
     from contextlib import aclosing  # Python 3.10+
-except ImportError:  # pragma: no cover - fallback for Python 3.8/3.9
+except ImportError: 
     class aclosing:  # noqa: N801
         def __init__(self, thing):
             self.thing = thing
@@ -54,8 +54,8 @@ ALLOWED_FILES = {"index.html", "style.css", "app.js"}
 SESSION_MAX_AGE_HOURS = int(os.getenv("SESSION_MAX_AGE_HOURS", "24"))
 
 # Comma-separated list of allowed origins, e.g. "https://myapp.com,http://localhost:3000".
-CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "*").split(",") if o.strip()]
-
+# Comma-separated list of allowed origins
+CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "*,https://appmentor-frontend.vercel.app").split(",") if o.strip()]
 # Generated code is untrusted. By default previews are served in a CSP sandbox so they
 # cannot touch this app's origin. A sandboxed page has an opaque origin, so the browser's
 # real localStorage throws; we inject a localStorage shim (see _ERROR_SCRIPT) that keeps
@@ -99,12 +99,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+# Safe check for static files (Railway compatible)
+if os.path.exists(FRONTEND_DIR):
+    app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
 
 @app.get("/")
 async def root():
-    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+    index_path = os.path.join(FRONTEND_DIR, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {
+        "status": "online",
+        "message": "Backend is running successfully! Frontend is hosted on Vercel."
+    }
 
 
 # --------------------------------------------------------------------------
@@ -194,14 +202,6 @@ def _read_version_files(sid: str, version: str) -> Dict[str, str]:
 # Preview + download
 # --------------------------------------------------------------------------
 
-# Injected at the top of <head> in the preview page. It does two things:
-#  1. reports runtime errors to the parent page (shows the Auto-fix banner);
-#  2. replaces localStorage with an in-memory shim. The sandboxed preview has an opaque
-#     origin, so the real localStorage throws. The shim is seeded from "#store=<json>" in
-#     the iframe URL and posts every change to the parent ("storage-sync"), which saves it
-#     in its own localStorage and passes it back on the next reload. Data therefore
-#     survives Reload, version switches and Auto-fix without giving the generated code
-#     access to this app's origin.
 _ERROR_SCRIPT = (
     "<script>(function(){"
     "function P(m){try{window.parent.postMessage(m,'*');}catch(e){}}"
@@ -223,7 +223,6 @@ _ERROR_SCRIPT = (
 
 
 def _inject_error_script(html: str) -> str:
-    """Insert at the top of <head> so errors thrown by app.js during load are also caught."""
     if not html:
         return html
     m = re.search(r"<head[^>]*>", html, re.IGNORECASE)
@@ -267,7 +266,6 @@ async def preview_file(session_id: str, version: str, filename: str):
 
 @app.get("/api/files/{session_id}/{version}")
 async def get_files(session_id: str, version: str):
-    """Source files of one version. The page uses this to restore a session after a refresh."""
     _require_session(session_id)
     if not _safe_version(version):
         raise HTTPException(status_code=400, detail="invalid version")
@@ -302,7 +300,6 @@ async def download_zip(session_id: str, version: Optional[str] = Query(default=N
 # --------------------------------------------------------------------------
 
 def sse(event: str, data: Dict, sid: Optional[str] = None) -> str:
-    """Every event carries session_id so the client always knows which session it belongs to."""
     payload = dict(data)
     if sid:
         payload["session_id"] = sid
@@ -334,7 +331,6 @@ async def stream_graph_a(state: State, sid: str, clarified: bool) -> AsyncGenera
                 {"understanding": up.get("understanding"), "questions": questions, "plan": up.get("plan")},
                 sid,
             )
-            # After the user has answered once, never ask again: go straight to the plan.
             if questions and not clarified:
                 yield sse("needs_clarification", {"questions": questions}, sid)
             else:
@@ -345,11 +341,6 @@ async def stream_graph_a(state: State, sid: str, clarified: bool) -> AsyncGenera
 
 
 async def stream_build(state: State, sid: str, *, explain: bool) -> AsyncGenerator[str, None]:
-    """
-    Runs graph B and streams progress. The version is saved and `build_done` is sent as soon
-    as validation passes, so the preview appears before the explanation step finishes.
-    Code that fails validation after all retries is never saved.
-    """
     merged: Dict[str, Any] = dict(state)
     try:
         async with aclosing(app_graph_b.astream(state, stream_mode="updates")) as stream:
@@ -366,7 +357,7 @@ async def stream_build(state: State, sid: str, *, explain: bool) -> AsyncGenerat
                                 msg = "Generated code failed validation: " + "; ".join(errs)
                                 yield sse("error", {"message": msg[:300]}, sid)
                                 return
-                            continue  # the graph will retry the build
+                            continue
                         files = merged.get("code_files") or {}
                         version = await asyncio.to_thread(save_version, sid, files)
                         yield sse("build_done", {"version": version, "files": files}, sid)
@@ -443,7 +434,6 @@ async def api_fix(req: ApiRequest):
             "code_files": files_cur,
         }
     )
-    # Skip the explanation step: a fix only needs the new code.
     return _sse_response(stream_build(state, sid, explain=False))
 
 
